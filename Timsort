@@ -1,0 +1,436 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+namespace ConsoleApp7
+{
+    class Program
+    {
+        struct tok
+        {
+           public int indeks;
+           public int duljina;
+        }
+
+        static tok[] stog=new tok[85];
+        static bool padajuce = false;
+        static int stogCounter = 0;
+        static int[] polje;
+        static int[] pomoćnoPolje = new int[300];
+
+        static public void BinaryInsertionSort(int lo,int hi,int start)
+        {
+            int p,l,r,pivot;
+            
+            if (lo == start)
+                ++start;
+          
+
+            for (; start < hi; start++)
+            {
+                
+               
+                l = lo;
+                r = start;
+                pivot = polje[r];               
+
+                if (l >= r) break;
+
+                do
+                {                    
+                    p =l + ((r - l) >> 1);
+                    if (pivot< polje[p])
+                    {
+                        r = p;
+                        
+                    }
+                    else
+                    {
+                        l = p + 1;
+                    }
+                } while (l<r);
+
+                
+
+                for (int j = start; j >l; --j)
+                {
+                    
+                    polje[j ] = polje[j-1];
+                }
+           
+                polje[l] = pivot;         
+                
+                              
+            }
+
+           
+        }
+
+        static public int count_run(int pozicija)
+        {
+            
+            int counter =1;
+            if (pozicija==polje.Length-1)
+            {
+                return counter;
+            }
+
+            if (pozicija +1 == polje.Length - 1)
+            {
+                if (polje[pozicija + 1] < polje[pozicija])
+                {
+                    padajuce = true;
+                }
+                else
+                {
+                    padajuce = false;
+                }
+                return 2;
+            }
+            
+            if (polje[pozicija+1]<polje[pozicija])
+            {
+                padajuce = true;
+                counter++;
+                
+                while (polje[pozicija + counter] < polje[pozicija + counter - 1])
+                {
+                    counter++;
+                    if (pozicija + counter == polje.Length)
+                    {
+                        break;
+                    }
+                }
+                
+            }
+            else
+            {
+                padajuce = false;
+                counter++;
+               
+                while (polje[pozicija + counter] >= polje[pozicija + counter - 1])
+                {
+                    counter++;
+                    if (pozicija + counter==polje.Length)
+                    {
+                        break;
+                    }
+                }
+               
+            }
+            
+            return counter;
+        }
+
+        static public int merge_compute_minrun(int size)
+        {
+            int r=0;
+            while (size>=64)
+            {
+                r |= size & 1;
+                size >>= 1;
+            }
+      
+            return size;
+        }
+
+        static public void reverse_slice(int pozicija, int duljina)
+        {
+            int i = 0;
+            int duljina_kopija = duljina;
+            while (duljina_kopija > 1)
+            {
+                int temp=polje[pozicija+i];
+                polje[pozicija + i] = polje[pozicija + duljina -1 - i];
+                polje[pozicija + duljina -1 - i] = temp;
+
+                duljina_kopija -= 2;
+                i++;
+            }
+        }
+
+        static public void merge_lo_hi(int pa, int na , int pb, int nb,bool hiLo)
+        {
+         
+            int destination,acounter=0,bcounter=0,destcounter=0;
+            if (hiLo)
+            {
+                if (pomoćnoPolje.Length < na)
+                {
+                    pomoćnoPolje = new int[na];
+                }
+
+                destination = pa;
+                for (int i = 0; i < na; i++)
+                {
+                    pomoćnoPolje[i] = polje[pa + i];
+                }
+                while (true)
+                {
+                    if (pomoćnoPolje[acounter]<=polje[pb+bcounter]) 
+                    {
+                        polje[destination + destcounter] = pomoćnoPolje[acounter];
+                        acounter++;
+                    }
+                    else
+                    {
+                        polje[destination + destcounter] = polje[pb+bcounter];
+                        bcounter++;
+                    }
+
+                    ++destcounter;
+
+                    if (bcounter==nb)
+                    {
+                        while (acounter<na)
+                        {
+                            polje[destination + destcounter] = pomoćnoPolje[acounter];
+                            acounter++;
+                            ++destcounter;
+                        }
+                        return;
+                    }
+                    if (acounter==na)
+                    {
+                        while (bcounter < nb)
+                        {
+                            polje[destination + destcounter] = polje[pb + bcounter];
+                            bcounter++;
+                            ++destcounter;
+                        }
+                        return;
+                    }
+                    
+                }
+
+            }
+            else
+            {
+                if (pomoćnoPolje.Length < nb)
+                {
+                    pomoćnoPolje = new int[nb];
+                }
+                destination = pb+nb-1;
+                for (int i = 0; i < nb; i++)
+                {
+                    pomoćnoPolje[i] = polje[pb + i];
+                }
+                while (true)
+                {
+                    if (pomoćnoPolje[nb-1-bcounter] < polje[pa+na-1-acounter])
+                    {
+                        
+                        polje[destination - destcounter] = polje[pa + na - 1 - acounter];
+                        acounter++;
+                    }
+                    else
+                    {                      
+                        polje[destination - destcounter] = pomoćnoPolje[nb - 1 - bcounter];
+                        bcounter++;
+                    }
+
+                    ++destcounter;
+
+                    if (bcounter == nb)
+                    {
+                        while (acounter < na)
+                        {
+                            
+                            polje[destination - destcounter] = polje[pa + na - 1 - acounter];
+                            acounter++;
+                            ++destcounter;
+                        }
+                        return;
+                    }
+                    if (acounter == na)
+                    {
+                        while (bcounter < nb)
+                        {
+                           
+                            polje[destination - destcounter] = pomoćnoPolje[nb - 1 - bcounter];
+                            bcounter++;
+                            ++destcounter;
+                        }
+                        return;
+                    }
+                    
+                }
+            }
+
+            
+        }
+
+        static public void merge_at(int i)
+        {
+            int pa = stog[i].indeks,pb=stog[i+1].indeks;
+            int na = stog[i].duljina, nb = stog[i + 1].duljina;
+
+            stog[i].duljina = na + nb;
+            --stogCounter;
+            if (i==stogCounter-3)
+            {
+                stog[i + 1] = stog[i + 2];
+            }
+
+            if (na<=nb)
+            {
+                merge_lo_hi(pa, na, pb, nb, true);//mergelo
+            }
+            else
+            {
+                
+                merge_lo_hi(pa, na, pb, nb, false);//mergehi
+            }
+
+        }
+
+        static public void merge_collapse()
+        {
+            while (stogCounter > 1)
+            {
+                if ((stogCounter>2 &&(stog[stogCounter-3].duljina<= stog[stogCounter - 2].duljina + stog[stogCounter-1].duljina))|| 
+                   (stogCounter>3 && stog[stogCounter - 4].duljina <= stog[stogCounter - 3].duljina + stog[stogCounter-2].duljina))
+                {
+                    if (stog[stogCounter - 3].duljina < stog[stogCounter-1 ].duljina)
+                    {
+                        merge_at(stogCounter - 3);
+                    }
+                    else
+                    {
+                        merge_at(stogCounter - 2);
+                    }
+                }
+                else if (stog[stogCounter - 2].duljina <= stog[stogCounter-1 ].duljina)
+                {
+                    merge_at(stogCounter -2);
+                }
+                else
+                {
+                    
+                    break;
+                }
+            }
+        }
+
+        static public void merge_force_collapse()
+        {
+            while (stogCounter > 1)
+            {
+                if (stogCounter>2 &&(stog[stogCounter - 3].duljina < stog[stogCounter-1  ].duljina))
+                {
+                    merge_at(stogCounter - 3);
+                }
+                else
+                {
+                    merge_at(stogCounter - 2);
+                }
+            }
+        }
+
+        static void list_sort_impl(int [] novoPolje)
+        {
+        
+            polje = novoPolje;
+            int minrun = merge_compute_minrun(polje.Length);
+            int nadopuna=0, ostatak = polje.Length, pozicija_stara = 0;
+
+            while (ostatak>0)
+            {
+                int duljina = count_run(pozicija_stara); 
+                
+                ostatak -= duljina;
+               
+                if (padajuce)
+                {
+                    reverse_slice(pozicija_stara, duljina);
+                }
+                if (duljina<minrun)
+                {
+                    
+                    if (ostatak+duljina < minrun)
+                    {
+                        nadopuna = duljina+ostatak;                        
+                    }
+                    else
+                    {
+                        ostatak -= (minrun - duljina);
+                        nadopuna = minrun;                       
+                    }
+                    
+                    BinaryInsertionSort(pozicija_stara, pozicija_stara + nadopuna, pozicija_stara+duljina);
+                                       
+                    duljina = nadopuna;
+                    
+                }
+
+
+                stog[stogCounter] = new tok();
+                stog[stogCounter].duljina = duljina;
+                stog[stogCounter].indeks = pozicija_stara;
+                stogCounter++;
+
+                merge_collapse();
+                
+                pozicija_stara += duljina;
+
+                if (pozicija_stara > polje.Length - 1)
+                {
+                    break;
+                }
+
+            }
+            if (stogCounter>1)
+            {
+                merge_force_collapse();
+            }
+
+        }
+
+        static void Main(string[] args)
+        {   //main program za testiranje                   
+            
+            Random random = new Random();
+            int veličina = random.Next(1000,2000);
+            int[] test = new int[veličina];
+
+            for (int i = 0; i < veličina; i++)
+            {
+
+                test[i] = random.Next(-100,100);
+
+            }
+
+            polje = test;
+            foreach (int broj in polje)
+            {
+                Console.Write(broj + " ");
+            }
+            list_sort_impl(polje);
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("duljina polja:"+polje.Length);
+            Console.WriteLine("sortirano polje:");
+            Console.WriteLine();
+
+            //provjera sortiranosti
+            int j = 0;
+            foreach (int da in polje)
+            {
+                
+                j++;
+                Console.Write(da + " ");
+                if (j == polje.Length)
+                {
+                    break;
+                }                
+                if (polje[j-1] > polje[j ]) { Console.WriteLine("NIJE SORTIRANO"); break; }
+            }
+            Console.WriteLine();
+            Console.WriteLine("duljina sortiranog polja: "+j);
+            Console.ReadKey();
+        }
+    }
+}
